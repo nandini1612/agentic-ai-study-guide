@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Mastery Loop: An Agentic AI Tutor for Knowledge-Gap Diagnosis, Adaptive Quizzing and Study Planning"
+type: software
+version: 0.1.0
+date-released: 2026-09-29
+license: MIT
+authors:
+  - family-names: "Saxena"
+    given-names: "Nandini"
+repository-code: "https://github.com/nandini1612/agentic-ai-study-guide"
+keywords:
+  - intelligent tutoring systems
+  - Bayesian knowledge tracing
+  - adaptive assessment
+  - large language models
+  - agentic AI
+  - spaced repetition

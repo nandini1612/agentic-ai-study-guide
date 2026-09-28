@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<title>Mastery Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F2F4F0; --surface:#FFFFFF; --surface-2:#EAEEE8; --ink:#16202A; --ink-2:#4B5663; --ink-3:#6E7883;
+  --line:#D6DCD4; --accent:#0E6B63; --accent-ink:#FFFFFF; --accent-soft:#D6EBE6;
+  --hl:#F2CF3E; --hl-soft:#FBF0BC;
+  --bad:#B93C27; --bad-soft:#F7E1DB; --warn:#9A6512; --warn-soft:#F5E8CC; --good:#2B7445; --good-soft:#DAEEDF;
+  --con:#0F1A1F; --con-2:#16242B; --con-ink:#CFE2DB; --con-dim:#7F9A93; --con-line:#233740;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10161A; --surface:#172026; --surface-2:#1E2930; --ink:#E4EBE8; --ink-2:#A3B0B7; --ink-3:#7E8B92;
+    --line:#2B3740; --accent:#3DB5A8; --accent-ink:#04201C; --accent-soft:#163530;
+    --hl:#E2C23F; --hl-soft:#3A3417;
+    --bad:#F08068; --bad-soft:#3B211B; --warn:#E3AA4E; --warn-soft:#3A2D16; --good:#62C688; --good-soft:#173323;
+    --con:#0A1115; --con-2:#111C22; --con-ink:#CFE2DB; --con-dim:#6F8A84; --con-line:#1F3039;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10161A; --surface:#172026; --surface-2:#1E2930; --ink:#E4EBE8; --ink-2:#A3B0B7; --ink-3:#7E8B92;
+  --line:#2B3740; --accent:#3DB5A8; --accent-ink:#04201C; --accent-soft:#163530;
+  --hl:#E2C23F; --hl-soft:#3A3417;
+  --bad:#F08068; --bad-soft:#3B211B; --warn:#E3AA4E; --warn-soft:#3A2D16; --good:#62C688; --good-soft:#173323;
+  --con:#0A1115; --con-2:#111C22; --con-ink:#CFE2DB; --con-dim:#6F8A84; --con-line:#1F3039;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;background-position:-1px -1px;}
+body::before{content:"";position:fixed;inset:0;background:color-mix(in oklab,var(--bg) 82%,transparent);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:18px 40px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.08;font-weight:700}
+h2{font-size:22px;font-weight:700}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code,pre{font-family:var(--mono)}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.eyebrow{font:500 11.5px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.hl{background:linear-gradient(transparent 55%,var(--hl-soft) 55%);padding-inline:2px}
+
+/* header */
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:grid;place-items:center}
+.logo svg{display:block}
+.brand b{font:700 20px/1 var(--display);letter-spacing:-.01em}
+.brand span{display:block;font-size:12px;color:var(--ink-3)}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 11px;font-size:12.5px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}
+.dot.on{background:var(--good)} .dot.busy{background:var(--hl);animation:pulse 1s infinite} .dot.off{background:var(--ink-3)}
+@keyframes pulse{50%{opacity:.35}}
+
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:18px;scrollbar-width:none}
+.tab{border:0;background:none;padding:10px 12px;border-bottom:2px solid transparent;color:var(--ink-2);white-space:nowrap;font-weight:500;display:flex;gap:7px;align-items:center}
+.tab .n{font:500 11px/1 var(--mono);border:1px solid var(--line);border-radius:5px;padding:3px 5px;color:var(--ink-3)}
+.tab[aria-current="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab[aria-current="true"] .n{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tab:disabled{opacity:.4;cursor:not-allowed}
+
+.app{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:20px;align-items:start}
+@media (max-width:980px){.app{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card.flat{background:transparent;border:0;padding:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 15px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--ink-2);padding-inline:8px}
+.btn.quiet:hover{color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.kbd{font:500 11px/1 var(--mono);opacity:.75}
+
+/* profile */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:end}
+@media (max-width:720px){.hero{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--ink-2)}
+input[type=text],select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+.subjects{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.subj{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);text-align:left}
+.subj[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.subj .t{display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink-3);display:grid;place-items:center;flex:none}
+.subj[aria-pressed="true"] .check{background:var(--accent);border-color:var(--accent)}
+.subj ul{margin:0;padding-left:16px;color:var(--ink-2);font-size:13px}
+.toggle{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.toggle input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px}
+.steps-mini{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.steps-mini div{padding:10px 12px;border-right:1px solid var(--line);font-size:12.5px}
+.steps-mini div:last-child{border-right:0}
+.steps-mini b{display:block;font:500 11px/1.4 var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+@media (max-width:720px){.steps-mini{grid-template-columns:1fr 1fr}.steps-mini div{border-bottom:1px solid var(--line)}}
+
+/* question */
+.qhead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.progress{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.qtext{font-size:18px;font-weight:500;line-height:1.45}
+pre.code{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;font-size:13.5px;line-height:1.5;margin:0}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:11px 13px}
+.opt:hover:not(:disabled){border-color:var(--ink-3)}
+.opt .k{font:500 12px/1 var(--mono);border:1px solid var(--line);border-radius:5px;padding:4px 6px;color:var(--ink-2);flex:none;margin-top:1px}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt[aria-pressed="true"] .k{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.conf{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:4px}
+.conf .btn{min-width:110px;justify-content:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font:500 11.5px/1 var(--mono);padding:4px 7px;border-radius:5px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.chip.gap{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.chip.shaky{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.chip.solid{background:var(--good-soft);border-color:transparent;color:var(--good)}
+.chip.mis{background:var(--hl-soft);border-color:transparent;color:var(--ink)}
+.chip.ai{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.fb{border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.fb.ok{background:var(--good-soft)} .fb.no{background:var(--bad-soft)}
+.fb b{font-family:var(--display);font-size:16px}
+.tutor{border:1px dashed var(--accent);border-radius:8px;padding:12px 14px;white-space:pre-wrap;font-size:14px}
+
+/* gap map */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .v{font:700 26px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--ink-2)}
+.heat{display:grid;grid-template-columns:150px repeat(4,minmax(0,1fr));gap:6px;min-width:680px}
+.heat-scroll{overflow-x:auto}
+.heat .sname{font-weight:600;font-size:13px;display:flex;align-items:center}
+.cell{border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;text-align:left;border:1px solid transparent;min-height:104px}
+.cell.gap{background:var(--bad-soft)} .cell.shaky{background:var(--warn-soft)} .cell.solid{background:var(--good-soft)} .cell.none{background:var(--surface-2)}
+.cell[aria-pressed="true"]{border-color:var(--ink)}
+.cell .nm{font-size:12.5px;font-weight:600;line-height:1.3}
+.cell .pct{font:700 20px/1 var(--display);font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:6px}
+.cell .delta{font:500 11.5px/1 var(--mono)}
+.delta.up{color:var(--good)} .delta.down{color:var(--bad)}
+.bar{height:5px;border-radius:99px;background:color-mix(in oklab,var(--ink) 12%,transparent);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11.5px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tscroll{overflow-x:auto}
+.ev{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line)}
+.ev:last-child{border-bottom:0}
+.mark{font:700 13px/1 var(--mono);width:20px;flex:none;padding-top:2px}
+.mark.y{color:var(--good)} .mark.n{color:var(--bad)}
+
+/* plan */
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:9px}
+.day h3{display:flex;justify-content:space-between;align-items:baseline}
+.day h3 small{font:500 12px/1 var(--mono);color:var(--ink-3)}
+.sess{border-radius:7px;padding:8px 10px;font-size:13px;line-height:1.4;background:var(--surface-2)}
+.sess .ty{font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.07em;display:flex;justify-content:space-between;margin-bottom:4px;color:var(--ink-3)}
+.sess.learn{background:var(--bad-soft)} .sess.practice{background:var(--warn-soft)} .sess.review{background:var(--accent-soft)} .sess.mock{background:var(--hl-soft)} .sess.maintain{background:var(--good-soft)}
+.coach{white-space:pre-wrap;font-size:14.5px}
+
+/* how it works */
+.arch{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.arch .card{padding:16px}
+.formula{font:13px/1.6 var(--mono);background:var(--surface-2);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:nowrap}
+
+/* console */
+.console{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--con);color:var(--con-ink);border-radius:var(--r);border:1px solid var(--con-line);display:flex;flex-direction:column;max-height:calc(100vh - 32px);overflow:hidden}
+@media (max-width:980px){.console{position:static;max-height:460px}}
+.con-h{padding:14px 16px 10px;border-bottom:1px solid var(--con-line);display:flex;flex-direction:column;gap:10px}
+.con-h .ttl{display:flex;justify-content:space-between;align-items:center;font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--con-dim)}
+.loop{display:flex;gap:4px;flex-wrap:wrap}
+.loop span{font:500 11px/1 var(--mono);padding:5px 7px;border-radius:5px;border:1px solid var(--con-line);color:var(--con-dim)}
+.loop span.on{background:#E2C23F;color:#1a1a0a;border-color:#E2C23F}
+.con-log{overflow-y:auto;padding:10px 16px 16px;font:12.5px/1.55 var(--mono);display:flex;flex-direction:column;gap:9px;min-height:180px}
+.le{display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+.le .ts{color:var(--con-dim)}
+.le .ph{color:#7FD3C6;font-weight:500}
+.le.ai .ph{color:#E2C23F}
+.le.warn .ph{color:#F29A86}
+.le .tx{grid-column:2;color:var(--con-ink);word-wrap:break-word;min-width:0}
+.le .tx code{color:#E2C23F}
+.con-empty{color:var(--con-dim)}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:5}
+.confirm{display:flex;gap:8px;align-items:center;font-size:13px}
+textarea.copy{width:100%;min-height:160px;font:12.5px/1.5 var(--mono);background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 3a7 7 0 1 1-6.6 4.7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M1.6 4.6l1.9 3.3 3.3-1.9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.4" fill="#F2CF3E"/></svg></div>
+      <div><b>Mastery Loop</b><span>Agentic gap-finder, adaptive quizzes and study plans</span></div>
+    </div>
+    <span class="pill" id="studentPill"></span>
+    <span class="pill" id="aiPill"><i class="dot"></i>Checking AI…</span>
+    <span id="resetBox"><button class="btn quiet" data-act="reset-ask">Reset</button></span>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="Steps"></nav>
+  <div class="app">
+    <main id="main"></main>
+    <aside class="console" aria-label="Agent console">
+      <div class="con-h">
+        <div class="ttl"><span>Agent console</span><span id="conCount">0 steps</span></div>
+        <div class="loop" id="loop"></div>
+      </div>
+      <div class="con-log" id="conLog" aria-live="polite"></div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ============================== QUESTION BANK ============================== */
+/* each question: [difficulty 1-3, question, options, answerIndex, explanation, code?] */
+const SUBJECTS = [
+ {id:"dsa", name:"Data Structures & Algorithms", short:"DSA", topics:[
+  {id:"dsa.cx", name:"Complexity analysis", focus:"Big-O rules, counting nested loops, amortized analysis, recurrences and the Master theorem", ref:"CLRS: Growth of Functions; Divide-and-Conquer", qs:[
+   [1,"What is the time complexity of reading arr[i] from an array?",["O(1)","O(log n)","O(n)","O(n log n)"],0,"Arrays are contiguous, so the address is base + i × element size: one computation, no scanning."],
+   [2,"What is the time complexity of this code?",["O(n)","O(n log n)","O(n²)","O(2ⁿ)"],2,"The inner loop runs n, n−1, …, 1 times: n(n+1)/2 iterations in total, which is O(n²).","for i in range(n):\n    for j in range(i, n):\n        total += 1"],
+   [2,"A dynamic array doubles its capacity when full. What does append cost?",["O(1) amortized","O(log n) always","O(n) every time","O(n²) amortized"],0,"Resizes copy n items but happen only after n cheap appends, so the cost averages to a constant per append."],
+   [3,"Which bound solves T(n) = 2T(n/2) + n?",["O(n)","O(n log n)","O(n²)","O(log n)"],1,"Master theorem case 2: a = 2, b = 2, f(n) = n = n^(log₂2). Each of the log n levels does n work, so O(n log n). This is merge sort."]]},
+  {id:"dsa.lin", name:"Stacks, queues & lists", focus:"Stack and queue operations, linked-list pointer manipulation, two-pointer techniques", ref:"CLRS: Elementary Data Structures", qs:[
+   [1,"Which data structure is Last-In, First-Out (LIFO)?",["Queue","Stack","Priority queue","Hash table"],1,"A stack pops the most recently pushed element first."],
+   [2,"What does inserting a new node at the head of a singly linked list with n nodes cost?",["O(1)","O(log n)","O(n)","O(n²)"],0,"Point the new node at the old head and update the head pointer. No traversal is needed."],
+   [2,"Which structure is the natural fit for checking balanced brackets like {[()]}?",["Queue","Stack","Binary search tree","Min-heap"],1,"Push each opening bracket; each closing bracket must match the top of the stack."],
+   [3,"How can you detect a cycle in a singly linked list using O(1) extra space?",["Store visited nodes in a hash set","Move a slow and a fast pointer until they meet","Sort the nodes by address","Copy the list into an array"],1,"Floyd's tortoise and hare: if there is a cycle, the fast pointer (2 steps) eventually meets the slow one (1 step). A hash set needs O(n) space."]]},
+  {id:"dsa.tree", name:"Trees & heaps", focus:"BST invariants and traversals, heap shape and order properties, balanced vs. skewed trees", ref:"CLRS: Heapsort; Binary Search Trees", qs:[
+   [1,"An in-order traversal of a binary search tree visits keys in which order?",["Sorted ascending","Level by level","Insertion order","Sorted descending"],0,"Left subtree < node < right subtree, so left, node, right visits keys in ascending order."],
+   [2,"What is the height of a binary heap holding n elements?",["O(1)","O(log n)","O(n)","O(√n)"],1,"A heap is a complete binary tree: every level is full except possibly the last, so the height is ⌊log₂ n⌋."],
+   [2,"In a min-heap, where must the largest element be?",["At the root","In some leaf","Always the root's left child","Always at the last array index"],1,"Every node with a child is smaller than that child, so the maximum cannot have children. It is a leaf, but not necessarily the last one."],
+   [3,"What is the worst-case search time in an unbalanced BST with n nodes?",["O(1)","O(log n)","O(n)","O(n log n)"],2,"Inserting keys in sorted order builds a chain, so search degrades to a linked-list scan. Balanced trees (AVL, red-black) keep it O(log n)."]]},
+  {id:"dsa.graph", name:"Graphs", focus:"BFS and DFS, shortest paths (BFS, Dijkstra), DAGs and topological order", ref:"CLRS: Elementary Graph Algorithms; Single-Source Shortest Paths", qs:[
+   [1,"Breadth-first search (BFS) uses which data structure for its frontier?",["Stack","Queue","Heap","Hash table"],1,"BFS explores nodes in order of distance from the source: first in, first out."],
+   [2,"Which algorithm finds shortest paths (fewest edges) in an unweighted graph in O(V + E)?",["Depth-first search","Breadth-first search","Prim's algorithm","Topological sort"],1,"BFS reaches nodes in increasing edge count, so the first time it reaches a node is along a shortest path."],
+   [2,"Dijkstra's algorithm can give wrong answers when the graph has…",["Cycles","Negative edge weights","Disconnected parts","Undirected edges"],1,"Dijkstra finalizes a node once it is popped, assuming paths never get cheaper. A negative edge breaks that; use Bellman–Ford."],
+   [3,"A topological ordering of a graph exists if and only if the graph is…",["An undirected tree","A directed acyclic graph (DAG)","Strongly connected","Bipartite"],1,"A cycle would force a node to come before itself. Every DAG has at least one topological order."]]}
+ ]},
+ {id:"dbms", name:"Database Management Systems", short:"DBMS", topics:[
+  {id:"dbms.sql", name:"SQL queries", focus:"WHERE vs HAVING, joins and NULL behaviour, aggregates with GROUP BY", ref:"Silberschatz, Database System Concepts: Introduction to SQL", qs:[
+   [1,"Which keyword removes duplicate rows from a SELECT result?",["UNIQUE","DISTINCT","GROUP","FILTER"],1,"SELECT DISTINCT returns each distinct row once."],
+   [2,"Which clause filters groups after aggregation, e.g. departments with more than 5 employees?",["WHERE","HAVING","ORDER BY","LIMIT"],1,"WHERE filters rows before grouping. HAVING filters groups after GROUP BY, so it can use COUNT(*) > 5."],
+   [2,"What does A LEFT JOIN B return?",["Only rows that match in both tables","Every row of A, with B's columns NULL where there is no match","Every row of B, with A's columns NULL where there is no match","Every combination of rows from A and B"],1,"A LEFT JOIN keeps all rows of the left table. Unmatched rows get NULLs for the right table's columns."],
+   [3,"A table has 10 rows and 3 of them have NULL in email. What does this return?",["10","7","3","NULL"],1,"COUNT(column) skips NULLs; COUNT(*) counts rows. 10 − 3 = 7.","SELECT COUNT(email) FROM users;"]]},
+  {id:"dbms.norm", name:"Normalization", focus:"Functional dependencies, candidate keys, decomposing 1NF → 2NF → 3NF → BCNF", ref:"Silberschatz, Database System Concepts: Relational Database Design", qs:[
+   [1,"First normal form (1NF) requires that…",["Every attribute holds atomic (single) values","There are no transitive dependencies","Every determinant is a candidate key","The table has a numeric primary key"],0,"1NF forbids repeating groups and multi-valued cells: each cell holds one value."],
+   [2,"Second normal form (2NF) removes which kind of dependency?",["Partial dependency of a non-key attribute on part of a composite key","Transitive dependency through a non-key attribute","Multivalued dependency","Join dependency"],0,"2NF: no non-prime attribute depends on only part of a candidate key. It matters only when the key is composite."],
+   [2,"Student(roll_no, dept_id, dept_name) has key roll_no, with roll_no → dept_id and dept_id → dept_name. What is the highest normal form it satisfies?",["1NF only","2NF","3NF","BCNF"],1,"The key is a single attribute, so there are no partial dependencies and 2NF holds. dept_name depends on the key through dept_id, a transitive dependency, so 3NF fails."],
+   [3,"A relation is in BCNF when, for every non-trivial functional dependency X → Y…",["Y is a prime attribute","X is a superkey","X is part of some candidate key","Y is atomic"],1,"BCNF requires every determinant to be a superkey. 3NF also allows Y to be prime, which is why BCNF is stricter."]]},
+  {id:"dbms.txn", name:"Transactions & ACID", focus:"ACID, schedules and serializability, isolation anomalies, two-phase locking", ref:"Silberschatz, Database System Concepts: Transactions", qs:[
+   [1,"In ACID, what does the A stand for?",["Availability","Atomicity","Accuracy","Authorization"],1,"Atomicity: a transaction happens completely or not at all."],
+   [2,"A dirty read happens when a transaction…",["Reads data another transaction has written but not yet committed","Reads the same row twice and gets different values","Sees new rows appear in a repeated range query","Overwrites another transaction's committed update"],0,"If the writer later rolls back, the reader acted on data that never officially existed. The other options are non-repeatable reads, phantoms and lost updates."],
+   [2,"Which ACID property guarantees that committed changes survive a power failure?",["Atomicity","Consistency","Isolation","Durability"],3,"Durability: once committed, changes are persisted, typically through a write-ahead log."],
+   [3,"What does two-phase locking (2PL) guarantee?",["Freedom from deadlock","Conflict-serializable schedules","That no transaction ever waits","Freedom from starvation"],1,"2PL (a growing phase, then a shrinking phase) ensures conflict serializability. It can still deadlock."]]},
+  {id:"dbms.idx", name:"Indexing", focus:"B+ tree vs hash indexes, the composite-index leftmost-prefix rule, write costs", ref:"Silberschatz, Database System Concepts: Indexing", qs:[
+   [1,"What is the main trade-off of adding an index to a table?",["Faster lookups, but extra storage and slower writes","Faster writes, but slower reads","Less storage, but slower reads","There is no trade-off"],0,"Every INSERT, UPDATE and DELETE must also maintain the index."],
+   [2,"Which structure do most relational databases use for general-purpose indexes?",["Binary search tree","B+ tree","Linked list","Stack"],1,"B+ trees are shallow and wide, which minimises disk page reads, and their linked leaves make range scans efficient."],
+   [2,"A hash index is a poor choice for which query?",["WHERE id = 42","WHERE price BETWEEN 100 AND 200","WHERE email = 'a@b.com'","A primary-key lookup"],1,"Hashing scatters neighbouring keys, so it cannot answer range queries. It excels at exact matches."],
+   [3,"With a composite index on (last_name, first_name), which query benefits most?",["WHERE first_name = 'Asha'","WHERE last_name = 'Rao'","WHERE UPPER(last_name) = 'RAO'","ORDER BY first_name"],1,"Leftmost-prefix rule: the index is sorted by last_name first. Wrapping the column in a function also stops a normal index from being used."]]}
+ ]},
+ {id:"os", name:"Operating Systems", short:"OS", topics:[
+  {id:"os.sched", name:"CPU scheduling", focus:"FCFS, SJF, Round Robin and priority scheduling; computing waiting and turnaround times", ref:"Silberschatz, Operating System Concepts: CPU Scheduling", qs:[
+   [1,"Which scheduling algorithm gives each process a fixed time slice in turn?",["First-Come First-Served","Shortest Job First","Round Robin","Priority scheduling"],2,"Round Robin cycles through the ready queue, preempting a process when its time quantum expires."],
+   [2,"Among non-preemptive algorithms, which minimises average waiting time when burst times are known?",["FCFS","Shortest Job First","Round Robin","Longest Job First"],1,"Running short jobs first reduces how long everyone else waits. SJF is provably optimal for average waiting time."],
+   [2,"Short processes stuck behind one long CPU-bound process under FCFS is called…",["Starvation","The convoy effect","Thrashing","Aging"],1,"The convoy effect is specific to FCFS. Starvation is indefinite waiting, typically under priority scheduling, and aging is its remedy."],
+   [3,"P1 (5 ms), P2 (3 ms) and P3 (1 ms) all arrive at t = 0 in that order. What is the average waiting time under FCFS?",["4.33 ms","3.00 ms","1.67 ms","5.00 ms"],0,"The waits are 0, 5 and 8 ms, and 13 / 3 ≈ 4.33 ms. SJF would give 0, 1 and 4 ms, an average of 1.67 ms."]]},
+  {id:"os.sync", name:"Synchronization", focus:"Race conditions, critical-section requirements, mutexes and semaphores, the bounded buffer", ref:"Silberschatz, Operating System Concepts: Synchronization Tools", qs:[
+   [1,"A critical section is…",["Code that accesses shared data and must not run in two threads at once","The part of the kernel that handles interrupts","Any code that runs at high priority","Memory reserved for the OS"],0,"Mutual exclusion on the critical section prevents race conditions."],
+   [2,"A thread calls wait() (P) on a semaphore whose value is 0. What happens?",["The value becomes 1","The thread blocks until another thread signals","wait() returns an error","The semaphore is reset"],1,"wait() decrements only when the value is positive; otherwise the caller blocks until signal() (V)."],
+   [2,"Which of these is NOT a requirement for a correct critical-section solution?",["Mutual exclusion","Progress","Bounded waiting","Preemptive scheduling"],3,"The three requirements are mutual exclusion, progress and bounded waiting. The scheduling policy is not one of them."],
+   [3,"The classic bounded-buffer producer–consumer solution uses…",["One binary semaphore","Two counting semaphores (empty, full) plus a mutex","A single spinlock on the buffer","Only condition variables, no locks"],1,"empty counts free slots, full counts filled slots, and the mutex protects the buffer itself."]]},
+  {id:"os.dead", name:"Deadlocks", focus:"The four Coffman conditions, prevention vs avoidance (Banker's algorithm), resource-allocation graphs", ref:"Silberschatz, Operating System Concepts: Deadlocks", qs:[
+   [1,"Which is one of the four necessary conditions for deadlock?",["Hold and wait","Preemption","Aging","Paging"],0,"The Coffman conditions are mutual exclusion, hold and wait, no preemption and circular wait."],
+   [2,"The Banker's algorithm is a technique for deadlock…",["Prevention","Avoidance","Detection only","Recovery"],1,"It grants a request only if the system stays in a safe state, avoiding deadlock dynamically."],
+   [2,"Numbering resource types and requesting them only in increasing order breaks which condition?",["Mutual exclusion","Hold and wait","No preemption","Circular wait"],3,"With a global order, no cycle of waiting processes can form."],
+   [3,"A resource-allocation graph has a cycle, and every resource type has exactly one instance. Then…",["A deadlock may exist","A deadlock definitely exists","There is no deadlock","The system is in a safe state"],1,"With single-instance resources a cycle is necessary and sufficient for deadlock. With multiple instances a cycle only makes one possible."]]},
+  {id:"os.mem", name:"Memory management", focus:"Paging and address translation, the TLB, page replacement (FIFO, LRU, OPT)", ref:"Silberschatz, Operating System Concepts: Main Memory; Virtual Memory", qs:[
+   [1,"Paging eliminates which kind of fragmentation?",["Internal","External","Both","Neither"],1,"Any free frame fits any page, so free memory is never too scattered to use. Internal fragmentation remains in the last page."],
+   [2,"With 32-bit logical addresses and a 4 KB page size, how many bits is the page offset?",["10","12","20","32"],1,"4 KB = 2¹² bytes, so 12 offset bits. The remaining 20 bits are the page number."],
+   [2,"What does the TLB do?",["Caches recent page-table entries to speed up address translation","Stores swapped-out pages on disk","Allocates frames to new processes","Tracks free disk blocks"],0,"A TLB hit avoids the extra memory access to the page table."],
+   [3,"Belady's anomaly (more frames causing more page faults) can occur with…",["LRU","Optimal (OPT)","FIFO","None; more frames always help"],2,"FIFO is not a stack algorithm. LRU and OPT are stack algorithms and never show the anomaly."]]}
+ ]},
+ {id:"py", name:"Python Programming", short:"Python", topics:[
+  {id:"py.types", name:"Types & mutability", focus:"Mutable vs immutable types, aliasing and references, shallow copies", ref:"Python tutorial: Data Structures", qs:[
+   [1,"Which built-in type is immutable?",["list","dict","set","tuple"],3,"Tuples cannot change after creation. Lists, dicts and sets can."],
+   [2,"What does this print?",["[1, 2]","[1, 2, 3]","[3]","An error"],1,"b = a copies the reference, not the list, so both names point to the same object.","a = [1, 2]\nb = a\nb.append(3)\nprint(a)"],
+   [2,"What is type({})?",["set","dict","tuple","NoneType"],1,"Empty braces create an empty dict. An empty set is written set()."],
+   [3,"What does this print?",["[[1, 0], [0, 0]]","[[1, 0], [1, 0]]","[[1, 1], [0, 0]]","An error"],1,"[[0]*2]*2 repeats a reference to the same inner list, so changing one row changes both. Use [[0]*2 for _ in range(2)].","a = [[0] * 2] * 2\na[0][0] = 1\nprint(a)"]]},
+  {id:"py.func", name:"Functions & scope", focus:"*args, **kwargs and defaults, the LEGB scope rule, the mutable-default pitfall", ref:"Python tutorial: More on Defining Functions", qs:[
+   [1,"What does a Python function return if it has no return statement?",["0","None","An empty string","It raises an error"],1,"Falling off the end of a function implicitly returns None."],
+   [2,"In def f(*args), what is args?",["A list of all arguments","A tuple of extra positional arguments","A dict of keyword arguments","The first argument only"],1,"*args packs extra positional arguments into a tuple; **kwargs packs keyword arguments into a dict."],
+   [2,"In what order does Python resolve a variable name?",["Global, Local, Built-in, Enclosing","Local, Enclosing, Global, Built-in","Built-in, Global, Enclosing, Local","Local, Global, Enclosing, Built-in"],1,"The LEGB rule: Local, then Enclosing function scopes, then Global (module), then Built-ins."],
+   [3,"What does this print?",["[2]","[1, 2]","[1]","An error"],1,"Default values are evaluated once, when the function is defined, so every call shares one list. Use acc=None and create the list inside.","def f(x, acc=[]):\n    acc.append(x)\n    return acc\n\nf(1)\nprint(f(2))"]]},
+  {id:"py.oop", name:"Classes & OOP", focus:"Classes and instances, self, class and static methods, inheritance and the MRO", ref:"Python tutorial: Classes", qs:[
+   [1,"What is __init__ used for?",["Initialising a new instance's attributes","Deleting an object","Importing a module","Declaring a private method"],0,"__init__ runs right after an instance is created and sets up its state."],
+   [2,"Inside an instance method, what does self refer to?",["The class","The instance the method was called on","The parent class","The module"],1,"obj.method() is shorthand for Class.method(obj), and self is that obj."],
+   [2,"What does a @classmethod receive as its first argument?",["The instance","The class","Nothing","The parent class"],1,"By convention it is named cls, which makes it useful for alternative constructors. A @staticmethod receives neither."],
+   [3,"What does this print?",["A","B","C","TypeError"],1,"The method resolution order of D is D → B → C → A → object, so B.hi is found first.","class A:\n    def hi(self): return 'A'\nclass B(A):\n    def hi(self): return 'B'\nclass C(A):\n    def hi(self): return 'C'\nclass D(B, C): pass\n\nprint(D().hi())"]]},
+  {id:"py.iter", name:"Comprehensions & generators", focus:"Comprehensions, generators and lazy evaluation, closures and late binding", ref:"Python tutorial: Iterators; Generators", qs:[
+   [1,"What does this list comprehension produce?",["[1, 4, 9]","[0, 1, 4]","[0, 1, 2]","[0, 2, 4]"],1,"range(3) is 0, 1, 2, and squaring gives 0, 1, 4.","[x * x for x in range(3)]"],
+   [2,"What does (x for x in range(3)) create?",["A tuple","A list","A generator object","A set"],2,"Parentheses make a generator expression, which yields values lazily. Python has no tuple comprehension."],
+   [2,"What does the second print show?",["[0, 1, 2]","[]","None","StopIteration is raised"],1,"A generator can be consumed only once, and the first list() exhausts it.","g = (x for x in range(3))\nprint(list(g))\nprint(list(g))"],
+   [3,"What does this print?",["[0, 1, 2]","[2, 2, 2]","[0, 0, 0]","An error"],1,"Closures capture the variable i, not its value at creation time, and by call time i is 2. Fix it with lambda i=i: i.","funcs = [lambda: i for i in range(3)]\nprint([f() for f in funcs])"]]}
+ ]}
+];
+const TOPIC = {}; const BANK = {};
+SUBJECTS.forEach(s => s.topics.forEach(t => { TOPIC[t.id] = {...t, subject:s.id, subjectShort:s.short};
+  t.qs.forEach((q,i) => { const id = t.id+"#"+i; BANK[id] = {id, tid:t.id, d:q[0], q:q[1], opts:q[2], a:q[3], exp:q[4], code:q[5]||"", src:"bank"}; }); }));
+
+/* demo student: outcomes consumed in order per topic */
+const DEMO = {
+ "dsa.cx":["right-sure"], "dsa.lin":["right-think","right-sure"], "dsa.tree":["wrong-sure","wrong-think"], "dsa.graph":["right-guess","wrong-think"],
+ "dbms.sql":["wrong-think","right-think"], "dbms.norm":["wrong-sure","wrong-sure"], "dbms.txn":["right-guess","right-think"], "dbms.idx":["right-sure"],
+ "os.sched":["right-think","right-think"], "os.sync":["wrong-guess","right-sure"], "os.dead":["wrong-sure","wrong-guess"], "os.mem":["right-sure"],
+ "py.types":["right-sure"], "py.func":["wrong-think","right-sure"], "py.oop":["right-sure"], "py.iter":["wrong-guess","wrong-guess"]
+};
+
+/* ============================== STATE ============================== */
+const KEY = "mastery-loop-v1";
+const PHASES = ["Observe","Diagnose","Decide","Act","Reflect"];
+const CONF = {sure:"Sure", think:"Think so", guess:"Guessing"};
+const DIFF = {1:"Easy",2:"Medium",3:"Hard"};
+const P0 = 0.5, GAP = 0.4, SOLID = 0.65, AD_LEN = 8;
+
+function fresh(){ return {v:1, view:"profile", name:"Aarav Mehta", subjects:["dsa","dbms","os","py"], minutes:60, aiGen:true,
+  topics:{}, diag:{items:[], idx:0, answers:[], done:false, started:false}, snap:null,
+  ad:{started:false, done:false, answers:[], cur:null, fb:null, tutor:{}, report:null},
+  aiItems:[], plan:null, planStale:true, coach:"", log:[], phase:-1, sel:null, focusCell:null }; }
+let S; try { S = JSON.parse(localStorage.getItem(KEY)) } catch(e){ S = null }
+if(!S || S.v !== 1) S = fresh();
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)) } catch(e){} }
+
+/* ============================== CLAUDE (sample) ============================== */
+let SAMPLE = null, AI = "checking", aiBusy = false, AIN = "AI";
+/* Two ways to reach a language model:
+   1) Local server (server.py) → /api/llm → Groq or Gemini, API key kept on the server.
+   2) Published on claude.ai → the page's built-in Claude capability. */
+function backendSample(){
+  const call = async (input, opts, json) => {
+    const prompt = typeof input === "string" ? input : input.map(m => m.content).join("\n\n");
+    let r, d = {};
+    try { r = await fetch("/api/llm", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({prompt, json}), signal:opts && opts.signal}); d = await r.json().catch(() => ({})); }
+    catch(e){ throw {code:"upstream_error", message:String(e)}; }
+    if (!r.ok) throw {code: r.status === 429 ? "rate_limited" : "upstream_error", message: d.error || ("HTTP " + r.status)};
+    const text = String(d.text || "");
+    if (!text.trim()) throw {code:"empty_completion", message:"empty"};
+    if (opts && opts.onText) opts.onText({text, delta:text});
+    return text;
+  };
+  const f = async (input, opts) => ({text: await call(input, opts, false), truncated:false});
+  f.json = async (input, opts) => {
+    const t = await call(input, opts, true);
+    try { return JSON.parse(t); } catch(e) {
+      const m = t.match(/[\[{][\s\S]*[\]}]/); if (m) { try { return JSON.parse(m[0]); } catch(_){} }
+      throw {code:"invalid_json", message:"Model reply was not valid JSON", text:t};
+    }
+  };
+  return f;
+}
+(async () => {
+  if (/^https?:$/.test(location.protocol) && !/claude\.ai|claudeusercontent/.test(location.hostname)) {
+    try {
+      const r = await fetch("/api/health");
+      if (r.ok) { const h = await r.json(); if (h.ok) { SAMPLE = backendSample(); AIN = h.label || "AI"; AI = "ready"; }
+        else { AI = "off"; console.warn("LLM backend not ready:", h.error); } paintAi(); render(); return; }
+    } catch(e) {}
+  }
+  if (window.claude && typeof window.claude.use === "function") {
+    AIN = "Claude";
+    try { SAMPLE = await window.claude.use("sample"); } catch(e) { SAMPLE = null; }
+    AI = SAMPLE ? "ready" : "off";
+  } else AI = "off";
+  paintAi(); render();
+})();
+function paintAi(){
+  const el = document.getElementById("aiPill");
+  if (aiBusy) el.innerHTML = `<i class="dot busy"></i>${AIN} is writing questions…`;
+  else if (AI === "ready") el.innerHTML = `<i class="dot on"></i>${AIN} connected`;
+  else if (AI === "checking") el.innerHTML = `<i class="dot"></i>Checking ${AIN}…`;
+  else el.innerHTML = '<i class="dot off"></i>Offline mode: question bank';
+}
+function aiErr(e){
+  const c = e && e.code;
+  if (["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)) { AI = "off"; paintAi(); return `${AIN} isn't available on this view, so the agent switched to the built-in question bank.`; }
+  if (c === "rate_limited") return `${AIN} is rate-limited right now. Try again in a minute.`;
+  if (c === "cancelled") return "Stopped.";
+  return `${AIN} didn't respond this time${e && e.message ? ` (${esc(String(e.message).slice(0,160))})` : ""}. The built-in bank still works; you can try again.`;
+}
+
+/* ============================== MODEL ============================== */
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+function bkt(p, correct, d, conf, learn){
+  let G = [.25,.25,.2][d-1], Sl = [.1,.15,.2][d-1];
+  if (correct && conf === "guess") G = .6;       // a lucky guess is weak evidence
+  if (!correct && conf === "sure") Sl = Sl * .5;     // confident and wrong is strong evidence of a misconception
+  const post = correct ? p*(1-Sl) / (p*(1-Sl) + (1-p)*G) : p*Sl / (p*Sl + (1-p)*(1-G));
+  return clamp(post + (1-post)*learn, .01, .99);
+}
+const status = p => p < GAP ? "gap" : p < SOLID ? "shaky" : "solid";
+const STATUS = {gap:"Gap", shaky:"Shaky", solid:"Solid"};
+function priority(t){ return (1 - t.p) + (t.mis ? .25 : 0) + (t.fragile ? .1 : 0); }
+function selTopics(){ return SUBJECTS.filter(s => S.subjects.includes(s.id)).flatMap(s => s.topics.map(t => t.id)); }
+const pct = p => Math.round(p*100);
+function item(id){ return id.startsWith("ai:") ? S.aiItems.find(x => x.id === id) : BANK[id]; }
+
+/* ============================== AGENT LOG ============================== */
+function log(phase, text, kind){
+  const d = new Date(); const ts = d.toTimeString().slice(0,8);
+  S.log.push({ts, ph:phase, x:text, k:kind||""}); if (S.log.length > 250) S.log.shift();
+  S.phase = PHASES.indexOf(phase); save(); renderConsole();
+}
+function renderConsole(){
+  document.getElementById("loop").innerHTML = PHASES.map((p,i) => `<span class="${i===S.phase?"on":""}">${p}</span>`).join("");
+  const box = document.getElementById("conLog");
+  box.innerHTML = S.log.length ? S.log.map(l => `<div class="le ${l.k}"><span class="ts">${l.ts}</span><span class="ph">${l.ph.toUpperCase()}</span><span class="tx">${l.x}</span></div>`).join("")
+    : `<div class="con-empty">The agent's reasoning appears here as it works: what it observes, how it diagnoses gaps, which question it picks next and why.</div>`;
+  box.scrollTop = box.scrollHeight;
+  document.getElementById("conCount").textContent = S.log.length + (S.log.length === 1 ? " step" : " steps");
+}
+
+/* ============================== DIAGNOSTIC ============================== */
+function startDiagnostic(){
+  const keep = {name:S.name, subjects:S.subjects, minutes:S.minutes, aiGen:S.aiGen};
+  S = Object.assign(fresh(), keep);
+  const tids = selTopics();
+  tids.forEach(tid => S.topics[tid] = {p:P0, mis:false, fragile:false, ev:[]});
+  S.diag = {items: tids.map(t => t+"#1"), idx:0, answers:[], done:false, started:true};
+  S.view = "diagnostic";
+  log("Observe", `Session started for <b>${esc(S.name)}</b>. Subjects: ${SUBJECTS.filter(s=>S.subjects.includes(s.id)).map(s=>s.short).join(", ")}.`);
+  log("Decide", `<code>plan_diagnostic()</code> → one medium probe per topic (${tids.length} topics). Each answer is followed by a confidence rating. Follow-up probes are added only where the first answer is inconclusive.`);
+  render();
+}
+function answerDiag(opt, conf){
+  const id = S.diag.items[S.diag.idx], it = BANK[id], t = S.topics[it.tid];
+  const correct = opt === it.a, p0 = t.p;
+  t.p = bkt(t.p, correct, it.d, conf, 0);
+  if (!correct && conf === "sure") t.mis = true;
+  if (correct && conf === "guess") t.fragile = true;
+  t.ev.push({qid:id, correct, conf, chosen:opt, phase:"diag"});
+  S.diag.answers.push({qid:id, correct, conf, chosen:opt});
+  let follow = "";
+  if (it.d === 2) {
+    if (!correct) { S.diag.items.splice(S.diag.idx+1, 0, it.tid+"#0"); follow = " Inconclusive, so an <i>easy</i> follow-up is queued to separate a small slip from a real gap."; }
+    else if (conf !== "sure") { S.diag.items.splice(S.diag.idx+1, 0, it.tid+"#3"); follow = " Correct but unsure, so a <i>hard</i> follow-up is queued to test depth."; }
+  }
+  log("Observe", `${TOPIC[it.tid].name} · ${DIFF[it.d].toLowerCase()} → ${correct?"correct":"wrong"}, confidence “${CONF[conf]}”. P(mastery) ${pct(p0)}% → <b>${pct(t.p)}%</b>.${follow}${(!correct&&conf==="sure")?" ⚑ Confident but wrong: possible misconception.":""}`);
+  S.diag.idx++; S.sel = null;
+  if (S.diag.idx >= S.diag.items.length) finishDiag(); else { save(); render(); }
+}
+function demoFill(){
+  const used = {};
+  S.diag.answers.forEach(a => { const tid = BANK[a.qid].tid; used[tid] = (used[tid]||0) + 1; });
+  let guard = 0;
+  while (S.diag.idx < S.diag.items.length && guard++ < 100) {
+    const it = BANK[S.diag.items[S.diag.idx]];
+    const seq = DEMO[it.tid] || ["right-think"]; const k = used[it.tid] || 0; used[it.tid] = k + 1;
+    const [res, conf] = seq[Math.min(k, seq.length-1)].split("-");
+    const opt = res === "right" ? it.a : (it.a + 1) % 4;
+    answerDiag(opt, conf);
+    if (S.view !== "diagnostic") return;
+  }
+}
+function finishDiag(){
+  S.diag.done = true;
+  S.snap = {}; Object.entries(S.topics).forEach(([k,t]) => S.snap[k] = t.p);
+  const ts = Object.entries(S.topics);
+  const g = ts.filter(([,t]) => status(t.p)==="gap"), sh = ts.filter(([,t]) => status(t.p)==="shaky"), mis = ts.filter(([,t]) => t.mis);
+  log("Diagnose", `<code>diagnose()</code> over ${S.diag.answers.length} responses → ${g.length} gaps, ${sh.length} shaky, ${ts.length-g.length-sh.length} solid.`);
+  if (mis.length) log("Diagnose", `Misconceptions flagged (confident and wrong): ${mis.map(([k])=>TOPIC[k].name).join(", ")}. These get a priority boost because a wrong belief is harder to fix than a blank.`);
+  const top = ts.map(([k,t]) => [k, priority(t)]).sort((a,b) => b[1]-a[1]).slice(0,3);
+  log("Decide", `Priority queue (1 − mastery + misconception/fragility boosts): ${top.map(([k,s]) => `${TOPIC[k].name} <b>${s.toFixed(2)}</b>`).join(" › ")}.`);
+  S.view = "gaps"; S.planStale = true; save(); render();
+}
+
+/* ============================== ADAPTIVE QUIZ ============================== */
+function seenIds(){ return new Set([...S.diag.items, ...S.ad.answers.map(a => a.qid)]); }
+function pool(tid){
+  const seen = seenIds();
+  const bank = [0,1,2,3].map(i => tid+"#"+i).filter(id => !seen.has(id)).map(id => BANK[id]);
+  const ai = S.aiItems.filter(x => x.tid === tid && !seen.has(x.id));
+  return [...ai, ...bank];
+}
+function selectNext(){
+  const last = S.ad.answers.slice(-2).map(a => a.tid);
+  const cands = selTopics().map(tid => { const t = S.topics[tid]; const rec = last.filter(x => x===tid).length;
+    return {tid, t, pr:priority(t), score:priority(t) - .35*rec, pool:pool(tid)}; }).filter(c => c.pool.length);
+  if (!cands.length) return null;
+  cands.sort((a,b) => b.score - a.score);
+  const c = cands[0], target = c.t.p < GAP ? 1 : c.t.p < SOLID ? 2 : 3;
+  const it = c.pool.slice().sort((a,b) => (Math.abs(a.d-target) - Math.abs(b.d-target)) || ((a.src==="ai"?0:1) - (b.src==="ai"?0:1)))[0];
+  return {it, c, target};
+}
+function startAdaptive(){
+  S.ad = {started:true, done:false, answers:[], cur:null, fb:null, tutor:{}, report:null};
+  log("Decide", `<code>start_practice(len=${AD_LEN})</code>. Policy: pick the highest-priority topic (with a penalty for repeating the last two), then match difficulty to mastery: easy below ${pct(GAP)}%, medium below ${pct(SOLID)}%, hard above.`);
+  if (AI === "ready" && S.aiGen) generateAI();
+  else log("Act", AI === "ready" ? "AI question writing is off; using the curated bank." : `${AIN} isn't connected in this view; using the curated 64-question bank.`, "warn");
+  nextQ();
+}
+function nextQ(){
+  if (S.ad.answers.length >= AD_LEN) return finishAdaptive();
+  const pick = selectNext();
+  if (!pick) { log("Reflect", "No unseen questions left for the target topics."); return finishAdaptive(); }
+  S.ad.cur = pick.it.id; S.ad.fb = null; S.sel = null;
+  const reasons = [];
+  reasons.push(`priority ${pick.c.pr.toFixed(2)}, mastery ${pct(pick.c.t.p)}%`);
+  if (pick.c.t.mis) reasons.push("open misconception");
+  if (pick.c.t.fragile) reasons.push("fragile (correct guess)");
+  log("Decide", `<code>select_item()</code> → <b>${TOPIC[pick.c.tid].name}</b> (${reasons.join("; ")}). Target difficulty: ${DIFF[pick.target].toLowerCase()}; serving ${DIFF[pick.it.d].toLowerCase()} ${pick.it.src==="ai"?"<b>${AIN}-written</b>":"bank"} item.`);
+  save(); render();
+}
+function answerAd(opt, conf){
+  const it = item(S.ad.cur), t = S.topics[it.tid];
+  const correct = opt === it.a, p0 = t.p;
+  t.p = bkt(t.p, correct, it.d, conf, .1);
+  let note = "";
+  if (!correct && conf === "sure") { t.mis = true; note = " ⚑ Misconception persists."; }
+  if (correct && conf !== "guess" && t.mis) { t.mis = false; note = " ✓ Misconception flag cleared."; }
+  if (correct && conf === "guess") t.fragile = true;
+  if (correct && conf === "sure") t.fragile = false;
+  t.ev.push({qid:it.id, correct, conf, chosen:opt, phase:"ad"});
+  S.ad.answers.push({qid:it.id, tid:it.tid, correct, conf, chosen:opt, p0, p1:t.p});
+  S.ad.fb = {correct, chosen:opt, p0, p1:t.p};
+  log("Act", `<code>update_model()</code> ${TOPIC[it.tid].name}: ${correct?"correct":"wrong"} (“${CONF[conf]}”). P(mastery) ${pct(p0)}% → <b>${pct(t.p)}%</b>, status ${STATUS[status(t.p)]}.${note}`);
+  S.planStale = true; save(); render();
+}
+function autoAnswer(){
+  const it = item(S.ad.cur), t = S.topics[it.tid];
+  const pc = clamp(.3 + .65*t.p + (it.d===1?.1:it.d===3?-.1:0), .1, .95);
+  const correct = Math.random() < pc;
+  const conf = correct ? (Math.random() < .6 ? "think" : "sure") : (Math.random() < .5 ? "guess" : "think");
+  answerAd(correct ? it.a : (it.a + 1 + Math.floor(Math.random()*3)) % 4, conf);
+}
+function finishAdaptive(){
+  S.ad.done = true; S.ad.cur = null;
+  const tids = [...new Set(S.ad.answers.map(a => a.tid))];
+  const before = tids.reduce((s,k) => s + S.snap[k], 0) / (tids.length||1);
+  const after = tids.reduce((s,k) => s + S.topics[k].p, 0) / (tids.length||1);
+  const acc = S.ad.answers.filter(a => a.correct).length;
+  const resolved = tids.filter(k => S.topics[k].ev.some(e => e.phase==="diag" && !e.correct && e.conf==="sure") && !S.topics[k].mis);
+  const moved = tids.filter(k => status(S.snap[k]) !== status(S.topics[k].p) && S.topics[k].p > S.snap[k]);
+  S.ad.report = {tids, before, after, acc, n:S.ad.answers.length, resolved, moved};
+  log("Reflect", `<code>reflect()</code> ${acc}/${S.ad.answers.length} correct. Average mastery on practised topics ${pct(before)}% → <b>${pct(after)}%</b>. ${moved.length} topic(s) moved up a band; ${resolved.length} misconception(s) cleared.`);
+  log("Decide", "Study plan marked for rebuild with the updated mastery estimates.");
+  S.planStale = true; save(); render();
+}
+
+/* ---------- Claude: generate targeted questions ---------- */
+async function generateAI(){
+  if (!SAMPLE || aiBusy) return;
+  const targets = selTopics().map(k => [k, S.topics[k]]).filter(([,t]) => status(t.p) !== "solid").sort((a,b) => priority(b[1]) - priority(a[1])).slice(0,3);
+  if (!targets.length) { log("Decide", "No gaps left worth generating new items for.", ""); return; }
+  const evidence = targets.map(([k,t]) => {
+    const wrong = t.ev.filter(e => !e.correct).slice(-2).map(e => { const it = item(e.qid); return `  - Q: ${it.q}${it.code?` [code: ${it.code.replace(/\n/g," ⏎ ")}]`:""} | student chose: "${it.opts[e.chosen]}" (confidence: ${CONF[e.conf]}) | correct: "${it.opts[it.a]}"`; }).join("\n");
+    const d = t.p < GAP ? 1 : 2;
+    return `topic_id: ${k}\ntopic: ${TOPIC[k].name} (${TOPIC[k].subjectShort})\nkey ideas: ${TOPIC[k].focus}\nestimated mastery: ${pct(t.p)}%\nmisconception flagged: ${t.mis?"yes":"no"}\ntarget difficulty: ${d} (${DIFF[d]})\nwrong answers so far:\n${wrong || "  (none; answers were correct but unsure)"}`;
+  }).join("\n\n");
+  const prompt = `You write multiple-choice questions for an undergraduate computer-science course. An adaptive tutoring agent has diagnosed the knowledge gaps below. Write exactly 2 new questions for EACH topic, targeted at the specific misunderstanding the wrong answers reveal. Do not reuse the questions shown.
+
+${evidence}
+
+Rules:
+- 4 options, exactly one correct. Distractors must be plausible and reflect common misconceptions. No "all of the above" or "none of the above".
+- Match the target difficulty (1 = easy recall, 2 = medium application, 3 = hard analysis).
+- If code is needed put it in "code" (use \\n for newlines, Python or SQL), otherwise "".
+- "explanation": at most 45 words, explaining why the answer is right and what the tempting wrong option gets wrong.
+- "targets": at most 8 words naming the misconception targeted.
+- Verify each answer carefully; correctness matters more than cleverness.
+
+Reply with only JSON in this shape:
+{"items":[{"topic_id":"dbms.norm","difficulty":1,"question":"...","code":"","options":["...","...","...","..."],"answer":0,"explanation":"...","targets":"..."}]}`;
+  aiBusy = true; paintAi();
+  log("Act", `<code>generate_items()</code> → asking ${AIN} for 6 new questions aimed at ${targets.map(([k]) => TOPIC[k].name).join(", ")}, using the student's actual wrong answers as context. Practice continues with bank items meanwhile.`, "ai");
+  try {
+    const res = await SAMPLE.json(prompt, {modelTier:"default"});
+    const arr = Array.isArray(res) ? res : (res && res.items) || [];
+    let n = 0;
+    arr.forEach(x => {
+      if (!x || !TOPIC[x.topic_id] || !Array.isArray(x.options) || x.options.length !== 4) return;
+      const a = Number(x.answer); if (!(a >= 0 && a <= 3)) return;
+      if (!selTopics().includes(x.topic_id)) return;
+      // shuffle options so answer position carries no signal
+      const order = [0,1,2,3].sort(() => Math.random() - .5);
+      const id = "ai:" + (S.aiItems.length + 1);
+      S.aiItems.push({id, tid:x.topic_id, d:clamp(Number(x.difficulty)||2,1,3), q:String(x.question||"").slice(0,600), code:String(x.code||"").slice(0,800),
+        opts:order.map(i => String(x.options[i]).slice(0,300)), a:order.indexOf(a), exp:String(x.explanation||"").slice(0,500), targets:String(x.targets||"").slice(0,80), src:"ai"});
+      n++;
+    });
+    log("Act", n ? `${AIN} returned ${n} validated questions (schema, 4 options, 1 answer). They go to the front of the queue for their topics.` : `${AIN}'s reply didn't pass validation; staying on the curated bank.`, n ? "ai" : "warn");
+  } catch(e) { log("Act", aiErr(e), "warn"); }
+  aiBusy = false; paintAi(); save();
+  if (S.view === "adaptive") render();
+}
+
+/* ---------- Claude: tutor ---------- */
+async function askTutor(qid){
+  if (!SAMPLE) return;
+  const it = item(qid), a = S.ad.answers.find(x => x.qid === qid);
+  S.ad.tutor[qid] = "Thinking…"; render();
+  const prompt = `You are a patient CS tutor. A student got this question wrong.
+Topic: ${TOPIC[it.tid].name}
+Question: ${it.q}${it.code?`\nCode:\n${it.code}`:""}
+Options: ${it.opts.map((o,i) => `${"ABCD"[i]}) ${o}`).join(" | ")}
+Student chose: ${"ABCD"[a.chosen]}) ${it.opts[a.chosen]} (confidence: ${CONF[a.conf]})
+Correct: ${"ABCD"[it.a]}) ${it.opts[it.a]}
+
+In at most 110 words of plain text (no markdown symbols): 1) name the likely misconception behind their choice, 2) explain the correct idea with a tiny concrete example, 3) end with one short self-check question (don't give its answer).`;
+  try {
+    await SAMPLE(prompt, {modelTier:"quick", onText:({text}) => { S.ad.tutor[qid] = text; const el = document.getElementById("tutorOut"); if (el) el.textContent = text; }});
+    log("Act", `<code>explain()</code> ${AIN} tutored ${TOPIC[it.tid].name} based on the chosen wrong option.`, "ai");
+  } catch(e) { S.ad.tutor[qid] = aiErr(e); }
+  save(); render();
+}
+
+/* ============================== STUDY PLAN ============================== */
+function buildPlan(){
+  const mins = S.minutes;
+  const all = selTopics().map(k => ({k, t:S.topics[k], pr:priority(S.topics[k]), st:status(S.topics[k].p)})).sort((a,b) => b.pr - a.pr);
+  const focus = all.filter(x => x.st !== "solid").slice(0,7);
+  const solid = all.filter(x => x.st === "solid");
+  const days = Array.from({length:7}, (_,i) => ({n:i+1, s:[]}));
+  focus.forEach((x,i) => {
+    const d = Math.min(4, Math.floor(i * 5 / Math.max(focus.length,1)));
+    const gap = x.st === "gap";
+    days[d].s.push({ty:"learn", k:x.k, m:gap?25:15, tx:`Study: ${TOPIC[x.k].focus}.${x.t.mis?" Start by writing down why your earlier answer felt right, then find where it breaks.":""}`});
+    days[d].s.push({ty:"practice", k:x.k, m:gap?20:15, tx:`${gap?"8 easy → medium":"6 medium → hard"} questions. Rate your confidence on each.`});
+    [d+2, d+5].forEach(r => { if (r <= 5) days[r].s.push({ty:"review", k:x.k, m:10, tx:"Spaced review: recall key ideas from memory, then 3 mixed questions."}); });
+  });
+  solid.forEach((x,i) => days[5 + (i % 2)].s.push({ty:"maintain", k:x.k, m:10, tx:"Maintenance: 3 hard questions to keep it solid."}));
+  days[6].s.unshift({ty:"mock", k:null, m:20, tx:`Mixed mock quiz across all ${all.length} topics. The agent re-diagnoses from the results.`});
+  days.forEach(day => {
+    let total = day.s.reduce((a,b) => a + b.m, 0);
+    if (total > mins) { const f = mins / total; day.s.forEach(x => x.m = Math.max(5, Math.round(x.m * f / 5) * 5)); }
+    total = day.s.reduce((a,b) => a + b.m, 0);
+    if (mins - total >= 10 && focus.length) day.s.push({ty:"practice", k:focus[0].k, m:Math.floor((mins-total)/5)*5, tx:"Flex practice on your top-priority topic."});
+    day.total = day.s.reduce((a,b) => a + b.m, 0);
+  });
+  S.plan = {days, focus:focus.map(x => x.k), solid:solid.map(x => x.k), mins, at:Date.now()};
+  S.planStale = false;
+  log("Decide", `<code>build_plan()</code> → 7 days × ${mins} min. ${focus.length} focus topics in priority order, spaced reviews at +2 and +5 days, ${solid.length} solid topics on light maintenance, and a mock quiz on day 7.`);
+  save();
+}
+function planText(){
+  const p = S.plan; let out = `Mastery Loop study plan for ${S.name} (7 days, ${p.mins} min/day)\n\n`;
+  p.days.forEach(d => { out += `Day ${d.n} (${d.total} min)\n`; d.s.forEach(x => out += `  - [${x.ty}] ${x.k?TOPIC[x.k].name+": ":""}${x.tx} (${x.m} min)\n`); out += "\n"; });
+  if (S.coach) out += "Coach note:\n" + S.coach + "\n";
+  return out;
+}
+async function askCoach(){
+  if (!SAMPLE) return;
+  const lines = selTopics().map(k => { const t = S.topics[k]; return `${TOPIC[k].name} (${TOPIC[k].subjectShort}): mastery ${pct(t.p)}%, ${STATUS[status(t.p)]}${t.mis?", misconception":""}${t.fragile?", fragile":""}`; }).join("\n");
+  const prompt = `You are a study coach for a university CS student named ${S.name}. An agent estimated their topic mastery:\n${lines}\n\nThe 7-day plan focuses on: ${S.plan.focus.map(k => TOPIC[k].name).join(", ") || "maintenance only"} at ${S.plan.mins} minutes a day.\n\nWrite a personal note of 110 to 150 words in plain text (no markdown, no headings): what to tackle first and why, one concrete tactic for the flagged misconceptions, and one study habit for the week. Address the student as "you". Be specific to these topics; no generic motivation.`;
+  S.coach = "Thinking…"; render();
+  try {
+    await SAMPLE(prompt, {modelTier:"default", cache:false, onText:({text}) => { S.coach = text; const el = document.getElementById("coachOut"); if (el) el.textContent = text; }});
+    log("Act", `<code>coach_note()</code> ${AIN} personalised the plan summary.`, "ai");
+  } catch(e) { S.coach = aiErr(e); }
+  save(); render();
+}
+
+/* ============================== VIEWS ============================== */
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+const main = document.getElementById("main");
+const TABS = [["profile","Profile"],["diagnostic","Diagnostic"],["gaps","Gap map"],["adaptive","Adaptive quiz"],["plan","Study plan"],["about","How it works"]];
+function tabEnabled(v){ if (v==="profile"||v==="about") return true; if (v==="diagnostic") return S.diag.started; return S.diag.done; }
+
+function render(){
+  document.getElementById("studentPill").textContent = S.name || "Student";
+  document.getElementById("tabs").innerHTML = TABS.map(([v,l],i) => `<button class="tab" data-act="view" data-v="${v}" aria-current="${S.view===v}" ${tabEnabled(v)?"":"disabled"}><span class="n">${i<5?i+1:"?"}</span>${l}</button>`).join("");
+  main.innerHTML = ({profile:vProfile, diagnostic:vDiag, gaps:vGaps, adaptive:vAdaptive, plan:vPlan, about:vAbout}[S.view] || vProfile)();
+  paintAi(); renderConsole();
+}
+
+function vProfile(){
+  const nQ = selTopics().length;
+  return `<section class="card stack" style="gap:18px">
+    <div class="hero">
+      <div class="stack">
+        <span class="eyebrow">Project MVP · Agentic AI tutor</span>
+        <h1>Find the <span class="hl">gaps</span> in what you know, then close them.</h1>
+        <p class="muted">A short diagnostic with confidence ratings lets the agent estimate your mastery of each topic, spot misconceptions, write targeted questions with ${AIN}, and build a 7-day study plan.</p>
+      </div>
+      <div class="stack">
+        <div class="field"><label for="inName">Student name</label><input type="text" id="inName" value="${esc(S.name)}" autocomplete="off"></div>
+        <div class="field"><label for="inMin">Daily study time</label><select id="inMin">${[30,45,60,90].map(m => `<option value="${m}" ${S.minutes===m?"selected":""}>${m} minutes</option>`).join("")}</select></div>
+      </div>
+    </div>
+    <div class="stack">
+      <span class="lbl">Subjects to diagnose</span>
+      <div class="subjects">${SUBJECTS.map(s => `<button class="subj" data-act="subj" data-s="${s.id}" aria-pressed="${S.subjects.includes(s.id)}">
+        <span class="t">${s.name}<span class="check">${S.subjects.includes(s.id)?'<svg width="11" height="11" viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/></svg>':""}</span></span>
+        <ul>${s.topics.map(t => `<li>${t.name}</li>`).join("")}</ul></button>`).join("")}</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="inAi" ${S.aiGen?"checked":""}> <span>Let ${AIN} write new questions aimed at my gaps during adaptive practice. <span class="muted small">${AI==="ready"?`${AIN} is connected.`:AI==="checking"?`Checking for ${AIN}…`:`${AIN} isn't available here, so the agent will use the curated 64-question bank.`}</span></span></label>
+    <div class="row">
+      <button class="btn primary" data-act="start" ${nQ?"":"disabled"}>Start diagnostic <span class="kbd">${nQ}–${nQ*2} questions</span></button>
+      <button class="btn" data-act="demo" ${nQ?"":"disabled"}>Run demo student</button>
+      ${S.diag.started?'<span class="muted small">Starting again replaces the current session.</span>':""}
+    </div>
+  </section>
+  <div class="steps-mini" aria-label="What the agent does">
+    <div><b>1 · Probe</b>One question per topic, plus a confidence rating</div>
+    <div><b>2 · Diagnose</b>Bayesian mastery estimate per topic</div>
+    <div><b>3 · Target</b>Priority queue of gaps and misconceptions</div>
+    <div><b>4 · Adapt</b>Questions picked and written for your level</div>
+    <div><b>5 · Plan</b>Spaced 7-day schedule</div>
+  </div>`;
+}
+
+function qCard(it, {mode, fb}){
+  const letters = "ABCD";
+  const optsHtml = it.opts.map((o,i) => {
+    let cls = "";
+    if (fb) { if (i === it.a) cls = "right"; else if (i === fb.chosen) cls = "wrong"; }
+    return `<button class="opt ${cls}" data-act="pick" data-i="${i}" aria-pressed="${!fb && S.sel===i}" ${fb?"disabled":""}><span class="k">${letters[i]}</span><span>${esc(o)}</span></button>`;
+  }).join("");
+  return `<div class="stack">
+    <div class="row"><span class="chip">${TOPIC[it.tid].subjectShort} · ${esc(TOPIC[it.tid].name)}</span><span class="chip">${DIFF[it.d]}</span>${it.src==="ai"?`<span class="chip ai">Written by ${AIN}${it.targets?` · targets: ${esc(it.targets)}`:""}</span>`:""}</div>
+    <p class="qtext">${esc(it.q)}</p>
+    ${it.code?`<pre class="code">${esc(it.code)}</pre>`:""}
+    <div class="opts">${optsHtml}</div>
+    ${!fb && S.sel!==null && S.sel!==undefined ? `<div class="conf"><span class="lbl">How sure are you?</span>${Object.entries(CONF).map(([k,l]) => `<button class="btn ${k==="think"?"":""}" data-act="conf" data-c="${k}">${l}</button>`).join("")}</div>`
+      : !fb ? `<p class="muted small">Choose an answer, then say how sure you are. Confidence helps the agent tell a lucky guess from real understanding.</p>` : ""}
+  </div>`;
+}
+
+function vDiag(){
+  if (S.diag.done) return `<section class="card stack"><h2>Diagnostic complete</h2><p class="muted">${S.diag.answers.length} responses recorded.</p><div class="row"><button class="btn primary" data-act="view" data-v="gaps">See gap map</button></div></section>`;
+  const it = BANK[S.diag.items[S.diag.idx]];
+  const covered = new Set(S.diag.answers.map(a => BANK[a.qid].tid)).size, total = selTopics().length;
+  return `<section class="card stack" style="gap:16px">
+    <div class="qhead"><div><span class="eyebrow">Diagnostic · item ${S.diag.idx+1} of ${S.diag.items.length}${S.diag.items.length>total?" (follow-ups added)":""}</span></div>
+      <div class="row"><span class="muted small">${covered}/${total} topics probed</span><button class="btn quiet small" data-act="demofill">Fill the rest with demo answers</button></div></div>
+    <div class="progress"><i style="width:${Math.round(S.diag.idx / S.diag.items.length * 100)}%"></i></div>
+    ${qCard(it, {mode:"diag"})}
+  </section>
+  <p class="muted small">No feedback during the diagnostic, so answers reflect what you know now. You'll see explanations in adaptive practice.</p>`;
+}
+
+function heatmap(){
+  const hasDelta = S.ad.answers.length > 0;
+  const subs = SUBJECTS.filter(s => S.subjects.includes(s.id));
+  return `<div class="heat-scroll"><div class="heat">${subs.map(s => `<div class="sname">${s.name}</div>` + s.topics.map(t => {
+    const T = S.topics[t.id]; if (!T) return `<div class="cell none"></div>`;
+    const st = status(T.p), d = hasDelta ? Math.round((T.p - S.snap[t.id])*100) : 0;
+    return `<button class="cell ${st}" data-act="cell" data-t="${t.id}" aria-pressed="${S.focusCell===t.id}">
+      <span class="nm">${t.name}</span>
+      <span class="pct">${pct(T.p)}%${hasDelta && d ? `<span class="delta ${d>0?"up":"down"}">${d>0?"▲":"▼"}${Math.abs(d)}</span>`:""}</span>
+      <span class="bar"><i style="width:${pct(T.p)}%"></i></span>
+      <span class="row" style="gap:4px"><span class="chip ${st}">${STATUS[st]}</span>${T.mis?'<span class="chip mis">Misconception</span>':""}${T.fragile?'<span class="chip">Fragile</span>':""}</span>
+    </button>`; }).join("")).join("")}</div></div>`;
+}
+function vGaps(){
+  const ts = selTopics().map(k => [k, S.topics[k]]);
+  const n = st => ts.filter(([,t]) => status(t.p)===st).length;
+  const mis = ts.filter(([,t]) => t.mis).length;
+  const ranked = ts.slice().sort((a,b) => priority(b[1]) - priority(a[1])).filter(([,t]) => status(t.p)!=="solid").slice(0,5);
+  const fc = S.focusCell && S.topics[S.focusCell] ? S.focusCell : null;
+  return `<section class="stack">
+    <div class="row" style="justify-content:space-between"><div><span class="eyebrow">Diagnosis for ${esc(S.name)}</span><h2>Knowledge gap map</h2></div>
+      <div class="row"><button class="btn primary" data-act="view" data-v="adaptive">${S.ad.started?"Open adaptive quiz":"Start adaptive quiz"}</button><button class="btn" data-act="view" data-v="plan">Study plan</button></div></div>
+    <div class="stats">
+      <div class="stat"><div class="v" style="color:var(--bad)">${n("gap")}</div><div class="l">Gaps (mastery &lt; ${pct(GAP)}%)</div></div>
+      <div class="stat"><div class="v" style="color:var(--warn)">${n("shaky")}</div><div class="l">Shaky (${pct(GAP)}–${pct(SOLID)}%)</div></div>
+      <div class="stat"><div class="v" style="color:var(--good)">${n("solid")}</div><div class="l">Solid (≥ ${pct(SOLID)}%)</div></div>
+      <div class="stat"><div class="v">${mis}</div><div class="l">Misconceptions flagged</div></div>
+    </div>
+  </section>
+  <section class="card stack">
+    <div class="row" style="justify-content:space-between"><h3>Mastery by topic</h3>
+      <div class="legend"><span><i class="sw" style="background:var(--bad-soft)"></i>Gap</span><span><i class="sw" style="background:var(--warn-soft)"></i>Shaky</span><span><i class="sw" style="background:var(--good-soft)"></i>Solid</span>${S.ad.answers.length?'<span>▲▼ change since diagnostic</span>':""}</div></div>
+    ${heatmap()}
+    <p class="muted small">Percentages are the agent's estimate that you have mastered the topic (Bayesian Knowledge Tracing). Select a topic to see the evidence.</p>
+    ${fc ? evidence(fc) : ""}
+  </section>
+  <section class="card stack">
+    <h3>What the agent will work on first</h3>
+    ${ranked.length ? `<div class="tscroll"><table><thead><tr><th>#</th><th>Topic</th><th>Mastery</th><th>Priority</th><th>Why</th></tr></thead><tbody>${ranked.map(([k,t],i) => `<tr><td class="num">${i+1}</td><td><b>${TOPIC[k].name}</b><br><span class="muted small">${TOPIC[k].subjectShort}</span></td><td class="num">${pct(t.p)}%</td><td class="num">${priority(t).toFixed(2)}</td><td class="small">${why(t)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">No gaps detected. The agent will stretch you with hard questions instead.</p>`}
+  </section>`;
+}
+function why(t){
+  const r = [];
+  const wrongSure = t.ev.filter(e => !e.correct && e.conf==="sure").length, wrong = t.ev.filter(e => !e.correct).length, right = t.ev.filter(e => e.correct).length;
+  if (wrongSure) r.push("answered wrong while sure, which points to a misconception rather than a blank");
+  else if (wrong) r.push(`${wrong} wrong answer${wrong>1?"s":""}`);
+  if (t.fragile) r.push("a correct answer was a guess, so understanding is fragile");
+  if (right && !t.fragile && wrong) r.push(`${right} correct, so partly understood`);
+  return r.length ? r.join("; ").replace(/^./, c => c.toUpperCase()) + "." : "Low evidence of mastery.";
+}
+function evidence(k){
+  const t = S.topics[k];
+  return `<div class="card" style="background:var(--surface-2);border:0"><div class="stack">
+    <div class="row" style="justify-content:space-between"><h3>${TOPIC[k].name}</h3><span class="chip ${status(t.p)}">${pct(t.p)}% · ${STATUS[status(t.p)]}</span></div>
+    <p class="small muted">Key ideas: ${TOPIC[k].focus}.</p>
+    <div>${t.ev.map(e => { const it = item(e.qid); return `<div class="ev"><span class="mark ${e.correct?"y":"n"}">${e.correct?"✓":"✗"}</span><div><div>${esc(it.q)}${it.code?' <span class="muted">(code)</span>':""}</div><div class="muted small">${e.phase==="diag"?"Diagnostic":"Practice"} · ${DIFF[it.d]} · chose “${esc(it.opts[e.chosen])}” · ${CONF[e.conf]}${!e.correct?` · correct: “${esc(it.opts[it.a])}”`:""}</div></div></div>`; }).join("")}</div>
+  </div></div>`;
+}
+
+function vAdaptive(){
+  if (!S.ad.started) {
+    const top = selTopics().map(k => [k,S.topics[k]]).sort((a,b) => priority(b[1]) - priority(a[1])).slice(0,3);
+    return `<section class="card stack" style="gap:16px">
+      <span class="eyebrow">Adaptive practice · ${AD_LEN} questions</span>
+      <h2>The agent chooses each question for you</h2>
+      <p class="muted">Before every question it re-ranks your topics, picks the most useful one, and sets the difficulty from your current mastery. After each answer it updates the estimate and shows an explanation.</p>
+      <div class="stack small">
+        <div><b>Starting focus:</b> ${top.map(([k,t]) => `${TOPIC[k].name} (${pct(t.p)}%)`).join(", ")}</div>
+        <div><b>Question source:</b> ${AI==="ready" && S.aiGen ? `${AIN} writes 6 new questions from your wrong answers while you start on curated ones.` : `Curated 64-question bank (${AIN} not connected in this view).`}</div>
+      </div>
+      <div class="row"><button class="btn primary" data-act="adstart">Start adaptive quiz</button></div>
+    </section>`;
+  }
+  if (S.ad.done) return adReport();
+  const it = item(S.ad.cur), fb = S.ad.fb, n = S.ad.answers.length + (fb?0:1);
+  let fbHtml = "";
+  if (fb) {
+    const tut = S.ad.tutor[it.id];
+    fbHtml = `<div class="fb ${fb.correct?"ok":"no"}"><b>${fb.correct?"Correct":"Not quite"}</b><p>${esc(it.exp)}</p>
+      <p class="small">Mastery of ${TOPIC[it.tid].name}: ${pct(fb.p0)}% → <b>${pct(fb.p1)}%</b> (${STATUS[status(fb.p1)]})</p></div>
+      ${!fb.correct && AI==="ready" ? (tut ? `<div class="tutor" id="tutorOut">${esc(tut)}</div>` : `<div><button class="btn" data-act="tutor">Ask ${AIN} why my answer was wrong</button></div>`) : ""}
+      <div class="row"><button class="btn primary" data-act="adnext">${S.ad.answers.length >= AD_LEN ? "See results" : "Next question"}</button></div>`;
+  }
+  return `<section class="card stack" style="gap:16px">
+    <div class="qhead"><span class="eyebrow">Adaptive practice · question ${n} of ${AD_LEN}</span>
+      <div class="row">${!fb?`<button class="btn quiet small" data-act="auto">Auto-answer (demo)</button>`:""}${S.aiItems.length?`<span class="chip ai">${S.aiItems.length} ${AIN} items in pool</span>`:""}</div></div>
+    <div class="progress"><i style="width:${Math.round(S.ad.answers.length / AD_LEN * 100)}%"></i></div>
+    ${qCard(it, {mode:"ad", fb})}
+    ${fbHtml}
+  </section>`;
+}
+function adReport(){
+  const r = S.ad.report;
+  return `<section class="stack">
+    <div class="row" style="justify-content:space-between"><div><span class="eyebrow">Reflection</span><h2>Practice round complete</h2></div>
+      <div class="row"><button class="btn primary" data-act="view" data-v="plan">Build study plan</button><button class="btn" data-act="adstart">Another round</button></div></div>
+    <div class="stats">
+      <div class="stat"><div class="v">${r.acc}/${r.n}</div><div class="l">Correct this round</div></div>
+      <div class="stat"><div class="v">${pct(r.before)}→${pct(r.after)}%</div><div class="l">Avg mastery, practised topics</div></div>
+      <div class="stat"><div class="v">${r.moved.length}</div><div class="l">Topics moved up a band</div></div>
+      <div class="stat"><div class="v">${r.resolved.length}</div><div class="l">Misconceptions cleared</div></div>
+    </div>
+  </section>
+  <section class="card stack"><h3>Before and after, by topic</h3>
+    <div class="tscroll"><table><thead><tr><th>Topic</th><th>After diagnostic</th><th>Now</th><th>Change</th><th>Status</th></tr></thead><tbody>
+    ${r.tids.map(k => { const d = Math.round((S.topics[k].p - S.snap[k])*100); return `<tr><td><b>${TOPIC[k].name}</b></td><td class="num">${pct(S.snap[k])}%</td><td class="num">${pct(S.topics[k].p)}%</td><td class="num"><span class="delta ${d>=0?"up":"down"}">${d>=0?"▲":"▼"}${Math.abs(d)}</span></td><td><span class="chip ${status(S.topics[k].p)}">${STATUS[status(S.topics[k].p)]}</span>${S.topics[k].mis?' <span class="chip mis">Misconception</span>':""}</td></tr>`; }).join("")}
+    </tbody></table></div></section>
+  <section class="card stack"><h3>Updated gap map</h3>${heatmap()}</section>`;
+}
+
+function vPlan(){
+  if (!S.plan || S.planStale || S.plan.mins !== S.minutes) buildPlan();
+  const p = S.plan;
+  return `<section class="stack">
+    <div class="row" style="justify-content:space-between;align-items:flex-end"><div><span class="eyebrow">7-day plan for ${esc(S.name)}</span><h2>Study plan</h2></div>
+      <div class="row">
+        <select id="planMin" aria-label="Minutes per day" style="width:auto">${[30,45,60,90].map(m => `<option value="${m}" ${S.minutes===m?"selected":""}>${m} min/day</option>`).join("")}</select>
+        <button class="btn" data-act="copy">Copy plan</button>
+        ${AI==="ready"?`<button class="btn primary" data-act="coach">${S.coach && S.coach!=="Thinking…"?"Rewrite coach note":`Personalise with ${AIN}`}</button>`:""}
+      </div></div>
+  </section>
+  ${S.coach ? `<section class="card stack"><span class="eyebrow">Coach note from ${AIN}</span><p class="coach" id="coachOut">${esc(S.coach)}</p></section>` : ""}
+  <section class="card stack">
+    <h3>Topics in this plan</h3>
+    <div class="tscroll"><table><thead><tr><th>Topic</th><th>Mastery</th><th>Role in plan</th><th>Read</th></tr></thead><tbody>
+    ${[...p.focus, ...p.solid].map(k => { const t = S.topics[k]; const f = p.focus.includes(k); return `<tr><td><b>${TOPIC[k].name}</b> <span class="muted small">${TOPIC[k].subjectShort}</span></td><td class="num"><span class="chip ${status(t.p)}">${pct(t.p)}%</span></td><td class="small">${f?`Focus #${p.focus.indexOf(k)+1}: learn, practise, 2 spaced reviews`:"Maintenance on day 6 or 7"}${t.mis?" · address misconception first":""}</td><td class="small muted">${TOPIC[k].ref}</td></tr>`; }).join("")}
+    </tbody></table></div>
+  </section>
+  <section class="stack">
+    <div class="legend"><span><i class="sw" style="background:var(--bad-soft)"></i>Learn</span><span><i class="sw" style="background:var(--warn-soft)"></i>Practise</span><span><i class="sw" style="background:var(--accent-soft)"></i>Spaced review</span><span><i class="sw" style="background:var(--good-soft)"></i>Maintain</span><span><i class="sw" style="background:var(--hl-soft)"></i>Mock quiz</span></div>
+    <div class="days">${p.days.map(d => `<div class="day"><h3>Day ${d.n}<small>${d.total} min</small></h3>${d.s.length ? d.s.map(x => `<div class="sess ${x.ty}"><div class="ty"><span>${({learn:"Learn",practice:"Practise",review:"Review",maintain:"Maintain",mock:"Mock quiz"})[x.ty]}</span><span>${x.m} min</span></div>${x.k?`<b>${TOPIC[x.k].name}</b><br>`:""}${esc(x.tx)}</div>`).join("") : '<p class="muted small">Rest day.</p>'}</div>`).join("")}</div>
+  </section>
+  <div id="copyBox"></div>`;
+}
+
+function vAbout(){
+  return `<section class="stack">
+    <div><span class="eyebrow">For reviewers</span><h2>How the agent works</h2><p class="muted" style="max-width:68ch;margin-top:6px">Mastery Loop runs a perceive → diagnose → decide → act → reflect loop. The console on the right logs every step with the tool it called and why, so the reasoning can be audited during a demo.</p></div>
+    <div class="arch">
+      <div class="card stack"><span class="eyebrow">1 · Perceive</span><h3>Diagnostic with confidence</h3><p class="small">One medium probe per topic. Each answer carries a confidence rating (Sure / Think so / Guessing). Inconclusive results trigger an easy or hard follow-up, the core idea of computerised adaptive testing.</p></div>
+      <div class="card stack"><span class="eyebrow">2 · Model</span><h3>Bayesian Knowledge Tracing</h3><p class="small">Each topic holds P(mastered). Every answer updates it with Bayes' rule using slip (S), guess (G) and learn (T) rates. Confidence adjusts the evidence: a correct guess counts less; a confident wrong answer counts more and flags a misconception.</p>
+        <div class="formula">P(L|✓) = P(L)(1−S) / [P(L)(1−S) + (1−P(L))G]<br>P(L|✗) = P(L)S / [P(L)S + (1−P(L))(1−G)]<br>P(L′) = P(L|obs) + (1 − P(L|obs))·T</div></div>
+      <div class="card stack"><span class="eyebrow">3 · Decide</span><h3>Priority and difficulty policy</h3><p class="small">priority = (1 − mastery) + 0.25·misconception + 0.10·fragile. The agent serves the top topic, with a penalty for repeats, at a difficulty matched to mastery: easy below 40%, medium below 65%, hard above.</p></div>
+      <div class="card stack"><span class="eyebrow">4 · Act</span><h3>${AIN} as a tool</h3><p class="small">The agent sends ${AIN} the student's actual wrong answers and asks for new questions aimed at that misconception. Replies are schema-validated and options are shuffled before use. ${AIN} also explains wrong answers and writes a coach note. Without ${AIN}, a curated 64-item bank keeps everything working.</p></div>
+      <div class="card stack"><span class="eyebrow">5 · Plan</span><h3>Spaced study plan</h3><p class="small">Focus topics are introduced in priority order across days 1–5, each with learn and practice blocks, then spaced reviews at +2 and +5 days. Solid topics get light maintenance, and day 7 is a mock quiz that feeds the next diagnosis. Blocks are scaled to the daily time budget.</p></div>
+      <div class="card stack"><span class="eyebrow">6 · Reflect</span><h3>Measured progress</h3><p class="small">After practice the agent compares mastery before and after, counts topics that moved up a band and misconceptions cleared, and rebuilds the plan from the new estimates.</p></div>
+    </div>
+    <div class="card stack"><h3>MVP scope and next steps</h3>
+      <div class="tscroll"><table><thead><tr><th>In this MVP</th><th>Next iteration</th></tr></thead><tbody>
+        <tr><td>4 subjects, 16 topics, 64 curated questions</td><td>Instructor-uploaded syllabi and question banks</td></tr>
+        <tr><td>BKT with hand-set parameters</td><td>Parameters fitted from real class data (EM), prerequisite graph between topics</td></tr>
+        <tr><td>Single student, saved in this browser</td><td>Accounts, class dashboard for instructors, progress over weeks</td></tr>
+        <tr><td>${AIN}-written items validated by schema</td><td>Second-pass answer verification and instructor approval queue</td></tr>
+      </tbody></table></div></div>
+  </section>`;
+}
+
+/* ============================== EVENTS ============================== */
+let toastT;
+function toast(m){ const t = document.getElementById("toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2200); }
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b || b.disabled) return;
+  const a = b.dataset.act;
+  if (a === "view") { S.view = b.dataset.v; save(); render(); window.scrollTo({top:0}); }
+  else if (a === "subj") { const s = b.dataset.s; S.subjects = S.subjects.includes(s) ? S.subjects.filter(x => x!==s) : [...S.subjects, s]; save(); render(); }
+  else if (a === "start") startDiagnostic();
+  else if (a === "demo") { S.name = S.name || "Aarav Mehta"; startDiagnostic(); log("Observe", "Demo mode: answering as a simulated student with mixed strengths.", "warn"); demoFill(); }
+  else if (a === "demofill") demoFill();
+  else if (a === "pick") { S.sel = Number(b.dataset.i); render(); }
+  else if (a === "conf") { if (S.sel === null || S.sel === undefined) return; if (S.view === "diagnostic") answerDiag(S.sel, b.dataset.c); else answerAd(S.sel, b.dataset.c); }
+  else if (a === "cell") { S.focusCell = S.focusCell === b.dataset.t ? null : b.dataset.t; render(); }
+  else if (a === "adstart") { S.view = "adaptive"; startAdaptive(); }
+  else if (a === "adnext") nextQ();
+  else if (a === "auto") autoAnswer();
+  else if (a === "tutor") askTutor(S.ad.cur);
+  else if (a === "coach") askCoach();
+  else if (a === "copy") { const txt = planText();
+    const fallback = () => { document.getElementById("copyBox").innerHTML = `<section class="card stack"><span class="lbl">Copy the plan below</span><textarea class="copy" id="copyTxt" readonly>${esc(txt)}</textarea></section>`; const ta = document.getElementById("copyTxt"); ta.focus(); ta.select(); };
+    try { navigator.clipboard.writeText(txt).then(() => toast("Plan copied"), fallback); } catch(err){ fallback(); } }
+  else if (a === "reset-ask") { document.getElementById("resetBox").innerHTML = `<span class="confirm">Clear all progress? <button class="btn small" data-act="reset-yes">Clear</button><button class="btn quiet small" data-act="reset-no">Keep</button></span>`; }
+  else if (a === "reset-no") { document.getElementById("resetBox").innerHTML = `<button class="btn quiet" data-act="reset-ask">Reset</button>`; }
+  else if (a === "reset-yes") { S = fresh(); save(); document.getElementById("resetBox").innerHTML = `<button class="btn quiet" data-act="reset-ask">Reset</button>`; render(); toast("Progress cleared"); }
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "inMin" || e.target.id === "planMin") { S.minutes = Number(e.target.value); S.planStale = true; save(); render(); }
+  if (e.target.id === "inAi") { S.aiGen = e.target.checked; save(); }
+});
+document.addEventListener("input", e => { if (e.target.id === "inName") { S.name = e.target.value.slice(0,40); document.getElementById("studentPill").textContent = S.name || "Student"; save(); } });
+document.addEventListener("keydown", e => {
+  if (!["diagnostic","adaptive"].includes(S.view) || e.target.matches("input,select,textarea")) return;
+  const k = e.key.toLowerCase();
+  if (["1","2","3","4"].includes(k) && !(S.view==="adaptive" && S.ad.fb) && (S.view==="diagnostic" ? !S.diag.done : S.ad.cur)) { S.sel = Number(k)-1; render(); }
+  else if (S.sel !== null && S.sel !== undefined && ["s","t","g"].includes(k)) { const c = {s:"sure",t:"think",g:"guess"}[k]; if (S.view==="diagnostic" && !S.diag.done) answerDiag(S.sel, c); else if (S.view==="adaptive" && S.ad.cur && !S.ad.fb) answerAd(S.sel, c); }
+  else if (k === "enter" && S.view==="adaptive" && S.ad.fb) nextQ();
+});
+if (S.sel === undefined) S.sel = null;
+render();
+</script>
+
+</body>
+</html>
